@@ -15,7 +15,8 @@
     "prepare": "npm run build"
   },
   "files": [
-    "build"
+    "build",
+    "node_modules/"
   ],
   "author": "Valientin",
   "license": "MIT",
