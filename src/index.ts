@@ -3,6 +3,8 @@
 import { ACTIONS, SolanaAgentKit, startMcpServer } from 'solana-agent-kit';
 import * as dotenv from 'dotenv';
 
+import { getTokenAddressBySymbolAction } from './actions.js';
+
 dotenv.config();
 
 function validateEnvironment() {
@@ -36,17 +38,13 @@ async function main() {
     );
 
     const mcp_actions = {
-      GET_ASSET: ACTIONS.GET_ASSET_ACTION,
-      DEPLOY_TOKEN: ACTIONS.DEPLOY_TOKEN_ACTION,
-      GET_PRICE: ACTIONS.FETCH_PRICE_ACTION,
-      WALLET_ADDRESS: ACTIONS.WALLET_ADDRESS_ACTION,
-      BALANCE: ACTIONS.BALANCE_ACTION,
-      TRANSFER: ACTIONS.TRANSFER_ACTION,
-      MINT_NFT: ACTIONS.MINT_NFT_ACTION,
-      TRADE: ACTIONS.TRADE_ACTION,
-      REQUEST_FUNDS: ACTIONS.REQUEST_FUNDS_ACTION,
-      RESOLVE_DOMAIN: ACTIONS.RESOLVE_DOMAIN_ACTION,
-      GET_TPS: ACTIONS.GET_TPS_ACTION,
+      FETCH_PRICE_ACTION: ACTIONS.FETCH_PRICE_ACTION,
+      WALLET_ADDRESS_ACTION: ACTIONS.WALLET_ADDRESS_ACTION,
+      BALANCE_ACTION: ACTIONS.BALANCE_ACTION,
+      TRANSFER_ACTION: ACTIONS.TRANSFER_ACTION,
+      TRADE_ACTION: ACTIONS.TRADE_ACTION,
+      GET_TPS_ACTION: ACTIONS.GET_TPS_ACTION,
+      GET_TOKEN_ADDRESS_BY_SYMBOL_ACTION: getTokenAddressBySymbolAction,
     };
 
     await startMcpServer(mcp_actions, agent, {
