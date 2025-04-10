@@ -37,13 +37,12 @@ async function main() {
       }
     );
 
-    const mcp_actions = {
+    const mcp_actions: any = {
       FETCH_PRICE_ACTION: ACTIONS.FETCH_PRICE_ACTION,
       WALLET_ADDRESS_ACTION: ACTIONS.WALLET_ADDRESS_ACTION,
       BALANCE_ACTION: ACTIONS.BALANCE_ACTION,
       TRANSFER_ACTION: ACTIONS.TRANSFER_ACTION,
       TRADE_ACTION: ACTIONS.TRADE_ACTION,
-      GET_TPS_ACTION: ACTIONS.GET_TPS_ACTION,
       GET_TOKEN_ADDRESS_BY_SYMBOL_ACTION: getTokenAddressBySymbolAction,
     };
 

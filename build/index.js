@@ -28,7 +28,6 @@ async function main() {
             BALANCE_ACTION: ACTIONS.BALANCE_ACTION,
             TRANSFER_ACTION: ACTIONS.TRANSFER_ACTION,
             TRADE_ACTION: ACTIONS.TRADE_ACTION,
-            GET_TPS_ACTION: ACTIONS.GET_TPS_ACTION,
             GET_TOKEN_ADDRESS_BY_SYMBOL_ACTION: getTokenAddressBySymbolAction,
         };
         await startMcpServer(mcp_actions, agent, {
