@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { ACTIONS, SolanaAgentKit, startMcpServer } from 'solana-agent-kit';
+import { trade } from 'solana-agent-kit/dist/tools/index.js';
 import * as dotenv from 'dotenv';
 
 import { getTokenAddressBySymbolAction } from './actions.js';
@@ -34,6 +35,8 @@ async function main() {
       {
         OPENAI_API_KEY: process.env.OPENAI_API_KEY || '',
         PERPLEXITY_API_KEY: process.env.PERPLEXITY_API_KEY || '',
+        JUPITER_FEE_BPS: parseInt(process.env.JUPITER_FEE_BPS || '0', 10),
+        JUPITER_REFERRAL_ACCOUNT: process.env.JUPITER_REFERRAL_ACCOUNT || '',
       }
     );
 
