@@ -1,6 +1,36 @@
-import axios from 'axios';
+// No longer using axios since we removed CoinMarketCap
 import { z } from 'zod';
 import { Action, SolanaAgentKit } from 'solana-agent-kit';
+
+// Direct implementation of getTokenAddressFromTicker function
+async function getTokenAddressFromTicker(ticker: string): Promise<string | null> {
+  try {
+    const response = await fetch(
+      `https://api.dexscreener.com/latest/dex/search?q=${ticker}`,
+    );
+    const data = await response.json();
+
+    if (!data.pairs || data.pairs.length === 0) {
+      return null;
+    }
+
+    // Filter for Solana pairs only and sort by FDV
+    let solanaPairs = data.pairs
+      .filter((pair: any) => pair.chainId === "solana")
+      .sort((a: any, b: any) => (b.fdv || 0) - (a.fdv || 0));
+
+    solanaPairs = solanaPairs.filter(
+      (pair: any) =>
+        pair.baseToken.symbol.toLowerCase() === ticker.toLowerCase(),
+    );
+
+    // Return the address of the highest FDV Solana pair
+    return solanaPairs[0]?.baseToken.address || null;
+  } catch (error) {
+    console.error("Error fetching token address from DexScreener:", error);
+    return null;
+  }
+}
 
 const tokens = new Map(
   Object.entries({
@@ -43,12 +73,11 @@ export const getTokenAddressBySymbolAction: Action = {
   }),
   handler: async (agent: SolanaAgentKit, _input: Record<string, any>) => {
     const symbol = _input.symbol;
-
     const normalizedSymbol = symbol.toUpperCase();
 
+    // First check our local cache for common tokens
     if (tokens.has(normalizedSymbol)) {
       const tokenAddress = tokens.get(normalizedSymbol);
-
       return {
         status: 'success',
         result: tokenAddress,
@@ -56,57 +85,28 @@ export const getTokenAddressBySymbolAction: Action = {
       };
     }
 
-    if (!process.env.COINMARKETCAP_API_KEY) {
-      return {
-        status: 'error',
-      };
-    }
-
+    // Try to get the token address using DexScreener
     try {
-      const response = await axios.get(
-        'https://pro-api.coinmarketcap.com/v2/cryptocurrency/info',
-        {
-          headers: {
-            'X-CMC_PRO_API_KEY': process.env.COINMARKETCAP_API_KEY,
-          },
-          params: {
-            symbol: normalizedSymbol,
-          },
-        }
-      );
-
-      if (
-        response.data &&
-        response.data.data &&
-        response.data.data[normalizedSymbol]
-      ) {
-        const tokenData = response.data.data[normalizedSymbol];
-
-        for (const platformData of tokenData) {
-          if (
-            platformData.platform &&
-            (platformData.platform.name.toLowerCase() === 'solana' ||
-              platformData.platform.symbol.toLowerCase() === 'sol')
-          ) {
-            const mintAddress = platformData.platform.token_address;
-
-            tokens.set(normalizedSymbol, mintAddress);
-
-            return {
-              status: 'success',
-              result: mintAddress,
-              message: `Token address for ${normalizedSymbol}: ${mintAddress}`,
-            };
-          }
-        }
+      console.log(`Fetching token address for ${normalizedSymbol} using DexScreener...`);
+      const tokenAddress = await getTokenAddressFromTicker(normalizedSymbol);
+      
+      if (tokenAddress) {
+        // Cache the result for future use
+        tokens.set(normalizedSymbol, tokenAddress);
+        
+        return {
+          status: 'success',
+          result: tokenAddress,
+          message: `Token address for ${normalizedSymbol}: ${tokenAddress}`,
+        };
       }
     } catch (error: any) {
-      console.error('Error fetching token details:', error);
-      return {
-        status: 'error',
-        message: `Failed to fetch token details: ${error?.message}`,
-      };
+      console.error('Error fetching token address from DexScreener:', error);
+      // Continue to fallback methods
     }
+
+    // No longer using CoinMarketCap as fallback
+    // If DexScreener didn't find the token, return error
 
     return {
       status: 'error',
